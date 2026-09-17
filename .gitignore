@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+
+# Local test/output artifacts
+*.output.json
+acr_projection.json
+
+# OS
+.DS_Store
+
+# Editors
+.vscode/
+.idea/

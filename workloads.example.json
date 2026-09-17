@@ -1,0 +1,29 @@
+{
+  "months": 12,
+  "items": [
+    {
+      "name": "Prod app servers",
+      "service_name": "Virtual Machines",
+      "region": "eastus",
+      "matched_sku": "Standard_D4s_v5",
+      "unit_price": 0.192,
+      "unit_of_measure": "1 Hour",
+      "currency": "USD",
+      "quantity": 4,
+      "hours_per_month": 730,
+      "monthly_growth_rate": 0.02
+    },
+    {
+      "name": "App Service Plan (Linux)",
+      "service_name": "Azure App Service",
+      "region": "eastus",
+      "matched_sku": "P1 v3",
+      "unit_price": 0.155,
+      "unit_of_measure": "1 Hour",
+      "currency": "USD",
+      "quantity": 2,
+      "hours_per_month": 730,
+      "monthly_growth_rate": 0.0
+    }
+  ]
+}
