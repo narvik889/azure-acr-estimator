@@ -104,20 +104,28 @@ live, since they change independent of this skill.
 
 ### 5. Build the downloadable workbook
 
-Use the `xlsx` skill's conventions (formulas not hardcoded results, blue
-inputs / black formulas, `$#,##0` currency format) to build a workbook with:
-- An **Inputs** tab: one row per workload item (service, SKU, region, qty,
-  hours, unit price sourced from the API, growth rate) — unit price is a
-  hardcoded input (blue) since it's a live lookup result, everything else
-  downstream should be a formula.
-- A **Projection** tab: month-by-month cost per item and total, computed via
-  formulas referencing the Inputs tab (`=Inputs!$D2*(1+Inputs!$F2)^(Projection!A1-1)`
-  style), not pasted-in numbers from the JSON.
-- A **Summary** tab: total ACR at 12mo/36mo, monthly run-rate, and a note
-  citing "Pricing source: Azure Retail Prices API, retrieved [date]" plus the
-  growth-rate assumptions in plain language.
+Run `scripts/build_workbook.py` on the projection JSON from step 2 — it
+builds the Inputs / Projection / Summary tabs with live formulas (not pasted
+numbers), following the `xlsx` skill's conventions (blue inputs, black
+formulas, `$#,##0.00` currency). It's a real, tested script, not an ad-hoc
+build:
 
-Save to the outputs directory and present it to the user with `present_files`.
+```bash
+python scripts/build_workbook.py --input acr_projection.json --output acr_workbook.xlsx
+```
+
+**Then recalculate it — this step is mandatory, not optional.** openpyxl
+writes formulas with no cached values, so the file is unusable until
+recalculated (see the `xlsx` skill for `recalc.py`):
+
+```bash
+python /mnt/skills/public/xlsx/scripts/recalc.py acr_workbook.xlsx
+```
+
+Confirm `"status": "success"` and `"total_errors": 0` before presenting the
+file — a clean exit code alone doesn't guarantee that (see the xlsx skill's
+notes on this). Save to the outputs directory and present it to the user
+with `present_files`.
 
 ## Known limits
 
@@ -139,3 +147,8 @@ Save to the outputs directory and present it to the user with `present_files`.
   manual reference tool for testing SKU/meter names outside the sandbox (e.g.
   on your own machine). It is not called by `calculate_acr.py` and should not
   be invoked as part of the automated skill workflow.
+- `scripts/build_workbook.py` sets landscape orientation and fit-to-width
+  page setup on every tab, since the default layout splits a wide table
+  across multiple pages and truncates cell display when printed or exported
+  to PDF (found during testing). Don't remove that page setup when editing
+  the script.

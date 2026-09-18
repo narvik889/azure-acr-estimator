@@ -48,6 +48,15 @@ python scripts/calculate_acr.py --input workloads.example.json --output acr_proj
 
 This reproduces a 12-month ACR of **$10,234.95** using the example's pre-resolved prices — useful for sanity-checking the projection logic itself, independent of live pricing.
 
+Then build the workbook from that same projection:
+
+```bash
+python scripts/build_workbook.py --input acr_projection.json --output acr_workbook.xlsx
+python /mnt/skills/public/xlsx/scripts/recalc.py acr_workbook.xlsx   # mandatory — see below
+```
+
+The whole pipeline (price resolution → math → workbook, including the recalc step) has been run end-to-end and verified: zero formula errors, and the Summary tab's `12-month ACR` cell — a live formula, not a pasted number — resolves to the same $10,234.95 as the standalone script above.
+
 ## Architecture
 
 The one thing worth understanding before you extend this: **`calculate_acr.py` makes zero network calls.** A subprocess launched from a script inside Claude's sandboxed environment can't reach external APIs — only Claude itself can, through its own tool calls. So pricing is always resolved by Claude via the MCP tool *first*, and only the already-priced result is handed to the script, which does pure projection math. `scripts/fetch_azure_prices.py` is kept only as a standalone CLI for manually testing SKU/meter names outside the sandbox — it is not part of the automated skill workflow. Full detail in [`SKILL.md`](./SKILL.md).
@@ -60,6 +69,7 @@ azure-acr-modeler/
 ├── workloads.example.json      # Sample input for calculate_acr.py
 ├── scripts/
 │   ├── calculate_acr.py        # Pure projection math — no network calls
+│   ├── build_workbook.py       # Builds the Inputs/Projection/Summary workbook from calculate_acr.py's output
 │   └── fetch_azure_prices.py   # Standalone manual-testing CLI only
 └── references/
     └── partner_tiers.md        # How to map ACR to partner incentive tiers
